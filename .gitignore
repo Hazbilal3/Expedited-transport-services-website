@@ -75,3 +75,4 @@ docs/
 .windsurf/
 .windsurfrules
 AGENTS.md
+.dockerignore

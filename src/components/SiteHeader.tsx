@@ -28,17 +28,17 @@ function ServicesMega({ open }: { open: boolean }) {
     <div
       style={{
         position: "absolute",
-        top: "calc(100% + 0.75rem)",
+        top: "calc(100% + 0.5rem)",
         left: "50%",
         transform: open
           ? "translateX(-50%) translateY(0) scale(1)"
           : "translateX(-50%) translateY(-10px) scale(0.98)",
         width: "min(96vw, 860px)",
-        background: "#0f0f14",
-        border: "1px solid rgba(255,255,255,0.09)",
+        background: "#fff",
+        border: "1px solid rgba(0,0,0,0.08)",
         borderRadius: "18px",
         padding: "1.75rem 2rem",
-        boxShadow: "0 28px 72px rgba(0,0,0,0.75)",
+        boxShadow: "0 12px 48px rgba(0,0,0,0.12)",
         opacity: open ? 1 : 0,
         visibility: open ? "visible" : "hidden",
         transition: "opacity 0.22s ease, transform 0.22s ease, visibility 0.22s",
@@ -50,7 +50,7 @@ function ServicesMega({ open }: { open: boolean }) {
       <p style={{
         fontFamily: "var(--font-mono, monospace)",
         fontSize: "0.6rem", letterSpacing: "0.28em",
-        textTransform: "uppercase", color: "rgba(255,255,255,0.28)",
+        textTransform: "uppercase", color: "rgba(0,0,0,0.35)",
         margin: "0 0 1.5rem 0",
       }}>
         Services
@@ -65,6 +65,7 @@ function ServicesMega({ open }: { open: boolean }) {
                 <Link
                   key={svc.href}
                   href={svc.href}
+                  className="mega-link"
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -73,33 +74,32 @@ function ServicesMega({ open }: { open: boolean }) {
                     borderRadius: "11px",
                     textDecoration: "none",
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                 >
                   {/* Lordicon */}
                   {/* @ts-expect-error custom element */}
                   <lord-icon
                     src={svc.icon}
                     trigger="hover"
-                    colors="primary:#ffffff"
-                    style={{ width: "22px", height: "22px", flexShrink: 0, opacity: 0.6 }}
+                    colors="primary:#555555"
+                    style={{ width: "22px", height: "22px", flexShrink: 0, opacity: 0.55 }}
                   />
-                  <span style={{
+                  <span className="mega-link-text" style={{
                     display: "flex", alignItems: "center", gap: "0.35rem",
                     fontFamily: "'Segoe UI', system-ui, -apple-system, var(--font-inter), sans-serif",
                     fontSize: "0.9375rem", fontWeight: 500,
-                    color: "rgba(255,255,255,0.82)",
+                    color: "rgba(0,0,0,0.78)",
                     letterSpacing: "-0.01em", lineHeight: 1.2,
+                    transition: "color 0.15s ease",
                   }}>
                     {svc.label}
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.35, flexShrink: 0 }}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.3, flexShrink: 0 }}>
                       <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
                     </svg>
                   </span>
                 </Link>
               ))}
             </div>
-            {ci < 2 && <div style={{ background: "rgba(255,255,255,0.07)" }} />}
+            {ci < 2 && <div style={{ background: "rgba(0,0,0,0.07)" }} />}
           </React.Fragment>
         ))}
       </div>
@@ -113,6 +113,15 @@ export function SiteHeader() {
   const [servicesOpen, setServicesOpen] = useState(false);
   const [heroEnded, setHeroEnded] = useState(false);
   const navCardRef = useRef<HTMLDivElement>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openDropdown = () => {
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    setServicesOpen(true);
+  };
+  const closeDropdown = () => {
+    closeTimerRef.current = setTimeout(() => setServicesOpen(false), 120);
+  };
 
   useEffect(() => {
     const onScroll = () => setHeroEnded(window.scrollY > window.innerHeight * 2.8);
@@ -154,8 +163,8 @@ export function SiteHeader() {
           <nav className="desk-nav" aria-label="Main navigation">
             <ul>
               <li
-                onMouseEnter={() => setServicesOpen(true)}
-                onMouseLeave={() => setServicesOpen(false)}
+                onMouseEnter={openDropdown}
+                onMouseLeave={closeDropdown}
               >
                 <button className="nav-lnk nav-lnk-btn">
                   Services
@@ -183,8 +192,8 @@ export function SiteHeader() {
 
           {/* Dropdown — child of nav-card so left:50% centers to card */}
           <div
-            onMouseEnter={() => setServicesOpen(true)}
-            onMouseLeave={() => setServicesOpen(false)}
+            onMouseEnter={openDropdown}
+            onMouseLeave={closeDropdown}
           >
             <ServicesMega open={servicesOpen} />
           </div>
@@ -265,9 +274,18 @@ export function SiteHeader() {
           color: rgba(255,255,255,0.72);
           text-decoration: none; padding: 0.5rem 0.85rem; border-radius: 10px;
           white-space: nowrap; background: none; border: none; cursor: pointer;
-          transition: color 0.15s ease, background 0.15s ease;
+          transition: color 0.18s ease, transform 0.18s ease;
+          will-change: transform;
         }
-        .nav-lnk:hover, .nav-lnk-btn:hover { color: #fff; background: rgba(255,255,255,0.09); }
+        .nav-lnk:hover, .nav-lnk-btn:hover {
+          color: #b6f000;
+          background: transparent;
+          transform: translateY(-1px);
+        }
+
+        .mega-link { transition: background 0.15s ease; }
+        .mega-link:hover { background: rgba(182,240,0,0.07) !important; }
+        .mega-link:hover .mega-link-text { color: #b6f000 !important; }
 
         .cta-contact {
           display: flex; align-items: center;

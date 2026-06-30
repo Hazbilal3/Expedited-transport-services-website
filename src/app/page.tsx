@@ -2,6 +2,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { HeroSection } from "@/components/HeroSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
 import { ScrollFrameSection } from "@/components/ScrollFrameSection";
+import { TestimonialsSection } from "@/components/TestimonialsSection";
 
 export default function Home() {
   return (
@@ -21,6 +22,9 @@ export default function Home() {
         </div>
         <div style={{ position: "relative", zIndex: 3 }}>
           <ScrollFrameSection />
+        </div>
+        <div style={{ position: "relative", zIndex: 4 }}>
+          <TestimonialsSection />
         </div>
       </main>
     </>
