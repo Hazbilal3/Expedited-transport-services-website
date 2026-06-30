@@ -59,3 +59,19 @@ src/assets/
 docs/
 *.md
 !README.md
+
+# AI/IDE tool configs from cloner template
+.aider*
+.amazonq/
+.augment/
+.claude/
+.clinerules
+.codex/
+.continue/
+.cursor/
+.gemini/
+.github/
+.opencode/
+.windsurf/
+.windsurfrules
+AGENTS.md
