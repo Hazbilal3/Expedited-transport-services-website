@@ -47,3 +47,15 @@ next-env.d.ts
 
 # Local temp files
 temp/
+
+# Large media assets (serve from CDN/storage instead)
+public/frames/
+public/frames2/
+public/videos/
+public/fonts/
+src/assets/
+
+# Research & clone docs — not part of website
+docs/
+*.md
+!README.md

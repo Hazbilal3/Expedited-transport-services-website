@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -13,8 +14,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Website Clone",
-  description: "Pixel-perfect website clone",
+  title: "Expedited Transport Services | Trucking & Logistics in CT",
+  description: "New Haven trucking company specializing in hotshot trucking, LTL, dry van, expedited shipping, and warehousing. Serving West Hartford, New Haven, Stamford and surrounding areas. Call (860) 988-3887.",
+  keywords: "trucking services, hotshot trucking, LTL trucking, dry van, expedited trucking, freight shipping, logistics, West Hartford CT, New Haven CT",
+  openGraph: {
+    title: "Expedited Transport Services | CT Trucking Company",
+    description: "Professional trucking and logistics solutions in Connecticut. Hotshot, LTL, dry van, expedited shipping & warehousing. Founded 2014.",
+    type: "website",
+    url: "https://expeditedtransportservices.net/",
+  },
 };
 
 export default function RootLayout({
@@ -25,9 +33,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
