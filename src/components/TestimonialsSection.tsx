@@ -1,82 +1,124 @@
 "use client";
 
-import { BorderGlow } from "./BorderGlow";
+import { useEffect, useState } from "react";
+import { CircularGallery } from "./CircularGallery";
 import { DotField } from "./DotField";
 
 const TESTIMONIALS = [
   {
-    quote: "ETS replaced three carriers for us. Hotshot, LTL, warehousing — all handled from a single call.",
-    name: "Nora Elkind",
-    role: "Head of Operations, Tri-State Parts",
-    initials: "NE",
-    bg: "#ecebe6",
-    avatarBg: "#8c7f6e",
+    quote: "Deliveries always on time. Expedited Transport never lets us down — our supply chain depends on them.",
+    name: "Nora Elkind", company: "Tri-State Parts", bg: "#0d1f14",
   },
   {
-    quote: "I coordinate our entire CT freight through ETS. From New Haven to Hartford, they never miss.",
-    name: "Amira Benali",
-    role: "Logistics Director, Paloma CT",
-    initials: "AB",
-    bg: "#e07254",
-    avatarBg: "#6b3022",
+    quote: "We moved our entire Connecticut distribution through them. Flawless execution every single time.",
+    name: "Amira Benali", company: "Paloma CT", bg: "#111827",
   },
   {
-    quote: "Our first hotshot load moved the same day we called. Onboarding took one afternoon.",
-    name: "Priya Sharma",
-    role: "VP Operations, NE Supply Co.",
-    initials: "PS",
-    bg: "#7cc2b6",
-    avatarBg: "#2b6860",
+    quote: "Our perishables reach customers fresh because these drivers understand what urgency actually means.",
+    name: "Priya Sharma", company: "NE Supply Co.", bg: "#1f1108",
   },
   {
-    quote: "Clear rates, fast callbacks, no excuses. Finally a carrier that actually respects a deadline.",
-    name: "Leo Hartmann",
-    role: "Founder, Tynker Retail",
-    initials: "LH",
-    bg: "#c2aed8",
-    avatarBg: "#5b4882",
+    quote: "Best freight partner we've had in 15 years of retail operations. Wouldn't consider switching.",
+    name: "Leo Hartmann", company: "Tynker Retail", bg: "#0b1528",
   },
   {
-    quote: "Moved all our dry van runs to ETS last year. On-time rate jumped. Haven't looked back once.",
-    name: "Suki Tanaka",
-    role: "Supply Chain Lead, CT Foods Co.",
-    initials: "ST",
-    bg: "#e8a275",
-    avatarBg: "#824030",
+    quote: "Real-time tracking and zero damage claims across three years of heavy shipping partnership.",
+    name: "Suki Tanaka", company: "CT Foods Co.", bg: "#180b28",
   },
   {
-    quote: "The only carrier our warehouse needs. Expedited, LTL, freight brokerage — all covered perfectly.",
-    name: "James Wilson",
-    role: "COO, Skybreak Logistics",
-    initials: "JW",
-    bg: "#f5d878",
-    avatarBg: "#806022",
+    quote: "They handle our most time-critical shipments with an impressive reliability record.",
+    name: "James Wilson", company: "Skybreak Logistics", bg: "#102010",
   },
 ];
 
-/* resting fan: rotation + Y offset for each card */
-const RESTING = [
-  { rotate: -15, y: 26, z: 1 },
-  { rotate: -9,  y: 11, z: 2 },
-  { rotate: -3,  y: 2,  z: 3 },
-  { rotate:  3,  y: 5,  z: 4 },
-  { rotate:  8,  y: 15, z: 3 },
-  { rotate: 14,  y: 26, z: 2 },
-];
+function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number): string[] {
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const test = line ? line + " " + word : word;
+    if (ctx.measureText(test).width > maxW && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function makeCard(quote: string, name: string, company: string, bg: string): string {
+  const W = 800, H = 1100;
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d")!;
+
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, "rgba(182,240,0,0.07)");
+  grad.addColorStop(1, "rgba(0,0,0,0.35)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = "#b6f000";
+  ctx.font = "bold 160px Georgia, serif";
+  ctx.textBaseline = "top";
+  ctx.fillText("“", 52, 30);
+
+  const MARGIN = 64, LINE_H = 60, MAX_W = W - MARGIN * 2;
+  ctx.fillStyle = "#f0f0f0";
+  ctx.font = "400 38px Helvetica, Arial, sans-serif";
+  ctx.textBaseline = "top";
+  const lines = wrapText(ctx, quote, MAX_W);
+  let y = 250;
+  for (const ln of lines) { ctx.fillText(ln, MARGIN, y); y += LINE_H; }
+
+  y += 68;
+  ctx.strokeStyle = "#b6f000";
+  ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(MARGIN, y); ctx.lineTo(MARGIN + 72, y); ctx.stroke();
+
+  y += 48;
+  ctx.fillStyle = "#b6f000";
+  ctx.font = "bold 34px Helvetica, Arial, sans-serif";
+  ctx.fillText(name, MARGIN, y);
+
+  y += 52;
+  ctx.fillStyle = "rgba(255,255,255,0.5)";
+  ctx.font = "400 28px Helvetica, Arial, sans-serif";
+  ctx.fillText(company, MARGIN, y);
+
+  return canvas.toDataURL("image/png");
+}
 
 export function TestimonialsSection() {
+  const [items, setItems] = useState<{ image: string; text: string }[] | null>(null);
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setItems(
+        TESTIMONIALS.map(t => ({
+          image: makeCard(t.quote, t.name, t.company, t.bg),
+          text: `${t.name} — ${t.company}`,
+        }))
+      );
+    }, 0);
+    return () => clearTimeout(id);
+  }, []);
+
   return (
     <section style={{
       position: "relative",
-      minHeight: "100svh",
+      height: "100svh",
       background: "#fff",
       display: "flex",
       flexDirection: "column",
-      justifyContent: "center",
-      padding: "5rem 0 6rem",
       overflow: "hidden",
     }}>
-      {/* ── Dot-grid background — parent must be positioned with explicit size ── */}
+      {/* Dot-grid background */}
       <div style={{ position: "absolute", inset: 0 }}>
         <DotField
           dotRadius={1.8}
@@ -89,11 +131,14 @@ export function TestimonialsSection() {
         />
       </div>
 
-      {/* ── Content (above DotField) ── */}
-      <div style={{ position: "relative", zIndex: 1 }}>
-
-        {/* Section header */}
-        <div style={{ textAlign: "center", marginBottom: "5rem", padding: "0 1.5rem" }}>
+      {/* Content */}
+      <div style={{
+        position: "relative", zIndex: 1,
+        display: "flex", flexDirection: "column",
+        height: "100%",
+      }}>
+        {/* Header */}
+        <div style={{ textAlign: "center", padding: "3rem 1.5rem 1.5rem", flexShrink: 0 }}>
           <p style={{
             fontFamily: "var(--font-primary, 'Inter', sans-serif)",
             fontSize: "0.65rem", fontWeight: 700,
@@ -107,124 +152,27 @@ export function TestimonialsSection() {
             fontSize: "clamp(1.9rem, 3.2vw, 2.75rem)",
             fontWeight: 750, color: "#1a1814",
             letterSpacing: "-0.038em", lineHeight: 1.08,
+            margin: 0,
           }}>
             Trusted by businesses<br />across Connecticut
           </h2>
         </div>
 
-        {/* Fan stage — allow overflow so glow halos aren't clipped */}
-        <div style={{ width: "100%", overflow: "visible" }}>
-          <div style={{
-            position: "relative",
-            width: "980px",
-            height: "500px",
-            margin: "0 auto",
-            overflow: "visible",
-          }}>
-            {TESTIMONIALS.map((t, idx) => {
-              const r = RESTING[idx];
-              return (
-                <div
-                  key={idx}
-                  className="tes-card"
-                  style={{
-                    position: "absolute",
-                    left: `${20 + idx * 138}px`,
-                    top: "60px",
-                    width: "252px",
-                    height: "378px",
-                    zIndex: r.z,
-                    transform: `rotate(${r.rotate}deg) translateY(${r.y}px)`,
-                  }}
-                >
-                  <BorderGlow
-                    backgroundColor={t.bg}
-                    glowColor="76 100 47"
-                    colors={["#b6f000", "#cbff1a", "#d4ff4d"]}
-                    borderRadius={22}
-                    glowRadius={32}
-                    glowIntensity={1.4}
-                    edgeSensitivity={22}
-                    coneSpread={28}
-                    fillOpacity={0.35}
-                  >
-                    {/* Quote */}
-                    <p style={{
-                      flex: 1,
-                      fontFamily: "var(--font-primary, 'Inter', sans-serif)",
-                      fontSize: "1.08rem",
-                      fontWeight: 700,
-                      lineHeight: 1.46,
-                      color: "#1c1a17",
-                      letterSpacing: "-0.013em",
-                      padding: "30px 26px 0",
-                    }}>
-                      &ldquo;{t.quote}&rdquo;
-                    </p>
-
-                    {/* Author */}
-                    <div style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                      padding: "18px 26px 24px",
-                      borderTop: "1px solid rgba(0,0,0,0.09)",
-                      marginTop: "auto",
-                    }}>
-                      <div style={{
-                        width: "40px", height: "40px",
-                        borderRadius: "50%", flexShrink: 0,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: "0.68rem", fontWeight: 800,
-                        letterSpacing: "0.04em",
-                        color: "rgba(255,255,255,0.88)",
-                        background: t.avatarBg,
-                      }}>
-                        {t.initials}
-                      </div>
-                      <div>
-                        <div style={{
-                          fontFamily: "var(--font-primary, 'Inter', sans-serif)",
-                          fontSize: "0.78rem", fontWeight: 700,
-                          color: "#1a1814", lineHeight: 1.2,
-                        }}>
-                          {t.name}
-                        </div>
-                        <div style={{
-                          fontFamily: "var(--font-primary, 'Inter', sans-serif)",
-                          fontSize: "0.68rem",
-                          color: "rgba(0,0,0,0.46)",
-                          lineHeight: 1.35, marginTop: "1px",
-                        }}>
-                          {t.role}
-                        </div>
-                      </div>
-                    </div>
-                  </BorderGlow>
-                </div>
-              );
-            })}
-          </div>
+        {/* Gallery — flex:1 with minHeight:0 so percentage height resolves correctly */}
+        <div style={{ flex: 1, position: "relative", minHeight: 0 }}>
+          {items && (
+            <CircularGallery
+              items={items}
+              bend={3}
+              textColor="#b6f000"
+              borderRadius={0.04}
+              scrollEase={0.05}
+              font="bold 22px Inter"
+              scrollSpeed={2}
+            />
+          )}
         </div>
       </div>
-
-      <style>{`
-        .tes-card {
-          filter: grayscale(1) brightness(0.88);
-          transition:
-            filter 0.38s ease,
-            transform 0.44s cubic-bezier(0.34, 1.4, 0.64, 1);
-          will-change: transform, filter;
-        }
-        .tes-card:hover {
-          filter: grayscale(0) brightness(1) !important;
-          transform: translateY(-50px) rotate(0deg) scale(1.045) !important;
-          z-index: 30 !important;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .tes-card { transition: none; }
-        }
-      `}</style>
     </section>
   );
 }
