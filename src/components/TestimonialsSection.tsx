@@ -1,112 +1,132 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CircularGallery } from "./CircularGallery";
+import { useEffect, useRef } from "react";
+import PixelTransition from "./PixelTransition";
 import { DotField } from "./DotField";
+
+const CARD_W = 310;        // card width in px
+const ASPECT = "148%";     // height = 310 * 1.48 ≈ 459 px  (portrait)
+const GAP = 22;            // gap between cards
+const SPEED = 0.55;        // px per rAF frame ≈ 33px/s
 
 const TESTIMONIALS = [
   {
-    quote: "Deliveries always on time. Expedited Transport never lets us down — our supply chain depends on them.",
-    name: "Nora Elkind", company: "Tri-State Parts", bg: "#0d1f14",
+    quote: "Deliveries always on time. Expedited Transport never lets us down — our entire supply chain depends on them.",
+    name: "Nora Elkind",
+    company: "Tri-State Parts",
+    bg: "#0d1f14",
+    photo: "https://randomuser.me/api/portraits/women/44.jpg",
   },
   {
     quote: "We moved our entire Connecticut distribution through them. Flawless execution every single time.",
-    name: "Amira Benali", company: "Paloma CT", bg: "#111827",
+    name: "Amira Benali",
+    company: "Paloma CT",
+    bg: "#111827",
+    photo: "https://randomuser.me/api/portraits/women/68.jpg",
   },
   {
     quote: "Our perishables reach customers fresh because these drivers understand what urgency actually means.",
-    name: "Priya Sharma", company: "NE Supply Co.", bg: "#1f1108",
+    name: "Priya Sharma",
+    company: "NE Supply Co.",
+    bg: "#1f1108",
+    photo: "https://randomuser.me/api/portraits/women/21.jpg",
   },
   {
     quote: "Best freight partner we've had in 15 years of retail operations. Wouldn't consider switching.",
-    name: "Leo Hartmann", company: "Tynker Retail", bg: "#0b1528",
+    name: "Leo Hartmann",
+    company: "Tynker Retail",
+    bg: "#0b1528",
+    photo: "https://randomuser.me/api/portraits/men/46.jpg",
   },
   {
     quote: "Real-time tracking and zero damage claims across three years of heavy shipping partnership.",
-    name: "Suki Tanaka", company: "CT Foods Co.", bg: "#180b28",
+    name: "Suki Tanaka",
+    company: "CT Foods Co.",
+    bg: "#180b28",
+    photo: "https://randomuser.me/api/portraits/women/9.jpg",
   },
   {
     quote: "They handle our most time-critical shipments with an impressive reliability record.",
-    name: "James Wilson", company: "Skybreak Logistics", bg: "#102010",
+    name: "James Wilson",
+    company: "Skybreak Logistics",
+    bg: "#102010",
+    photo: "https://randomuser.me/api/portraits/men/77.jpg",
   },
 ];
 
-function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number): string[] {
-  const words = text.split(" ");
-  const lines: string[] = [];
-  let line = "";
-  for (const word of words) {
-    const test = line ? line + " " + word : word;
-    if (ctx.measureText(test).width > maxW && line) {
-      lines.push(line);
-      line = word;
-    } else {
-      line = test;
-    }
-  }
-  if (line) lines.push(line);
-  return lines;
-}
+function TestimonialBack({
+  quote, name, company, bg,
+}: { quote: string; name: string; company: string; bg: string }) {
+  return (
+    <div style={{
+      width: "100%", height: "100%",
+      background: bg,
+      display: "flex", flexDirection: "column", justifyContent: "center",
+      padding: "1.75rem 1.5rem",
+      boxSizing: "border-box",
+    }}>
+      <span style={{
+        color: "#b6f000",
+        fontSize: "3.5rem",
+        fontFamily: "Georgia, serif",
+        lineHeight: 0.7,
+        display: "block",
+      }}>&ldquo;</span>
 
-function makeCard(quote: string, name: string, company: string, bg: string): string {
-  const W = 800, H = 1100;
-  const canvas = document.createElement("canvas");
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext("2d")!;
+      <p style={{
+        color: "#f0f0f0",
+        fontSize: "0.93rem",
+        lineHeight: 1.62,
+        marginTop: "0.85rem",
+        fontFamily: "var(--font-primary, 'Inter', sans-serif)",
+        fontWeight: 400,
+        margin: "0.85rem 0 0",
+      }}>
+        {quote}
+      </p>
 
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, H);
-
-  const grad = ctx.createLinearGradient(0, 0, W, H);
-  grad.addColorStop(0, "rgba(182,240,0,0.07)");
-  grad.addColorStop(1, "rgba(0,0,0,0.35)");
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
-
-  ctx.fillStyle = "#b6f000";
-  ctx.font = "bold 160px Georgia, serif";
-  ctx.textBaseline = "top";
-  ctx.fillText("“", 52, 30);
-
-  const MARGIN = 64, LINE_H = 60, MAX_W = W - MARGIN * 2;
-  ctx.fillStyle = "#f0f0f0";
-  ctx.font = "400 38px Helvetica, Arial, sans-serif";
-  ctx.textBaseline = "top";
-  const lines = wrapText(ctx, quote, MAX_W);
-  let y = 250;
-  for (const ln of lines) { ctx.fillText(ln, MARGIN, y); y += LINE_H; }
-
-  y += 68;
-  ctx.strokeStyle = "#b6f000";
-  ctx.lineWidth = 2.5;
-  ctx.beginPath(); ctx.moveTo(MARGIN, y); ctx.lineTo(MARGIN + 72, y); ctx.stroke();
-
-  y += 48;
-  ctx.fillStyle = "#b6f000";
-  ctx.font = "bold 34px Helvetica, Arial, sans-serif";
-  ctx.fillText(name, MARGIN, y);
-
-  y += 52;
-  ctx.fillStyle = "rgba(255,255,255,0.5)";
-  ctx.font = "400 28px Helvetica, Arial, sans-serif";
-  ctx.fillText(company, MARGIN, y);
-
-  return canvas.toDataURL("image/png");
+      <div style={{ marginTop: "1.6rem" }}>
+        <div style={{ width: 44, height: 2, background: "#b6f000", marginBottom: "0.9rem" }} />
+        <p style={{
+          color: "#b6f000",
+          fontWeight: 700,
+          fontSize: "0.9rem",
+          fontFamily: "var(--font-primary, 'Inter', sans-serif)",
+          margin: 0,
+        }}>{name}</p>
+        <p style={{
+          color: "rgba(255,255,255,0.46)",
+          fontSize: "0.78rem",
+          fontFamily: "var(--font-primary, 'Inter', sans-serif)",
+          margin: "0.28rem 0 0",
+        }}>{company}</p>
+      </div>
+    </div>
+  );
 }
 
 export function TestimonialsSection() {
-  const [items, setItems] = useState<{ image: string; text: string }[] | null>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const isPausedRef = useRef(false);
+  const posRef = useRef(0);
+  const rafRef = useRef<number>(0);
 
   useEffect(() => {
-    const id = setTimeout(() => {
-      setItems(
-        TESTIMONIALS.map(t => ({
-          image: makeCard(t.quote, t.name, t.company, t.bg),
-          text: `${t.name} — ${t.company}`,
-        }))
-      );
-    }, 0);
-    return () => clearTimeout(id);
+    const row = rowRef.current;
+    if (!row) return;
+    const setWidth = TESTIMONIALS.length * (CARD_W + GAP);
+
+    function tick() {
+      if (!isPausedRef.current) {
+        posRef.current += SPEED;
+        if (posRef.current >= setWidth) posRef.current -= setWidth;
+        row!.style.transform = `translateX(-${posRef.current}px)`;
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    }
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
   return (
@@ -137,8 +157,8 @@ export function TestimonialsSection() {
         display: "flex", flexDirection: "column",
         height: "100%",
       }}>
-        {/* Header */}
-        <div style={{ textAlign: "center", padding: "3rem 1.5rem 1.5rem", flexShrink: 0 }}>
+        {/* Section heading */}
+        <div style={{ textAlign: "center", padding: "3rem 1.5rem 2rem", flexShrink: 0 }}>
           <p style={{
             fontFamily: "var(--font-primary, 'Inter', sans-serif)",
             fontSize: "0.65rem", fontWeight: 700,
@@ -158,19 +178,51 @@ export function TestimonialsSection() {
           </h2>
         </div>
 
-        {/* Gallery — flex:1 with minHeight:0 so percentage height resolves correctly */}
-        <div style={{ flex: 1, position: "relative", minHeight: 0 }}>
-          {items && (
-            <CircularGallery
-              items={items}
-              bend={3}
-              textColor="#b6f000"
-              borderRadius={0.04}
-              scrollEase={0.05}
-              font="bold 22px Inter"
-              scrollSpeed={2}
-            />
-          )}
+        {/* Marquee gallery */}
+        <div style={{ flex: 1, display: "flex", alignItems: "center", overflow: "hidden" }}>
+          <div
+            ref={rowRef}
+            style={{
+              display: "flex",
+              gap: GAP,
+              willChange: "transform",
+              paddingLeft: GAP,
+            }}
+          >
+            {/* Duplicate set for seamless infinite loop */}
+            {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
+              <div
+                key={i}
+                style={{ flexShrink: 0 }}
+                onMouseEnter={() => { isPausedRef.current = true; }}
+                onMouseLeave={() => { isPausedRef.current = false; }}
+              >
+                <PixelTransition
+                  firstContent={
+                    <img
+                      src={t.photo}
+                      alt={t.name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }}
+                    />
+                  }
+                  secondContent={
+                    <TestimonialBack
+                      quote={t.quote}
+                      name={t.name}
+                      company={t.company}
+                      bg={t.bg}
+                    />
+                  }
+                  gridSize={8}
+                  pixelColor="#b6f000"
+                  once={false}
+                  animationStepDuration={0.4}
+                  style={{ width: CARD_W }}
+                  aspectRatio={ASPECT}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
